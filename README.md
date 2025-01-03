@@ -2,12 +2,12 @@
 
 ## Timeline
 - **First meeting**: Jan 3, 2025
-- **Second meeting**: Jan 3, 2025
+- **Second meeting**: Jan 8, 2025
 - **Submission deadline**: March 10, 2025
 
 ## To do
 - [x] To understand Rules
-- To review previous competitions
+- [ ] To review previous competitions
   - https://www.kaggle.com/competitions/lux-ai-season-3/discussion/550848
-- To analyze the given code
+- [ ] To analyze the given env
 - [ ] To employ DQN algorithms
