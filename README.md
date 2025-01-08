@@ -10,7 +10,7 @@
   - [x] To employ DQN algorithms
     - envtest.py
       - QMIX, env = units.position, action = 0~5
-- **Third meeting**: Jan , 2025
+- **Third meeting**: Jan 17, 2025
   - [ ] "Agent.py"
   - [ ] observations → model
     - https://paperswithcode.com/dataset/smac
