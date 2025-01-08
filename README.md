@@ -11,3 +11,4 @@
   - https://www.kaggle.com/competitions/lux-ai-season-3/discussion/550848
 - [ ] To analyze the given env
 - [ ] To employ DQN algorithms
+  - 성종 직접 구현
