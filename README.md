@@ -10,7 +10,7 @@
     - envtest.py
       - QMIX, env = units.position, action = 0~5
 - **Third meeting**: Jan 17, 2025
-  - [ ] "Agent.py"
+  - [x] "Agent.py"
   - [ ] observations → model
     - https://paperswithcode.com/dataset/smac
     - https://github.com/google-research/football
