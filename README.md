@@ -11,8 +11,11 @@
       - QMIX, env = units.position, action = 0~5
 - **Third meeting**: Jan 17, 2025
   - [x] "Agent.py"
-  - [ ] observations → model
+  - [ ] observations → input
     - https://paperswithcode.com/dataset/smac
     - https://github.com/google-research/football
   - [ ] To implement "sap" action
+- **Fourth meeting**: Jan 24, 2025
+  - [ ] To data(agent) for imitation learning, Go, Chess, Starcraft, 1vs1 games reinforcement learning, GRF
+  - [ ] To train our model
 - **Submission deadline**: March 10, 2025
