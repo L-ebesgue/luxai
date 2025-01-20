@@ -16,6 +16,9 @@
     - https://github.com/google-research/football
   - [ ] To implement "sap" action
 - **Fourth meeting**: Jan 24, 2025
-  - [ ] To data(agent) for imitation learning, Go, Chess, Starcraft, 1vs1 games reinforcement learning, GRF
+  - [ ] To data(agent) for imitation learning: Go, Chess, Starcraft, GRF, other 1vs1 games 
   - [ ] To train our model
 - **Submission deadline**: March 10, 2025
+
+## Note
+- human logic + network -> unstable
