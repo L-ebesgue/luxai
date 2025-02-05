@@ -19,12 +19,12 @@ class Agent():
         
         step is the current timestep number of the game starting from 0 going up to max_steps_in_match * match_count_per_episode - 1.
         """
-        unit_mask = np.array(obs["units_mask"][self.team_id]) # shape (max_units, )
-        unit_positions = np.array(obs["units"]["position"][self.team_id]) # shape (max_units, 2)
-        unit_energys = np.array(obs["units"]["energy"][self.team_id]) # shape (max_units, 1)
-        observed_relic_node_positions = np.array(obs["relic_nodes"]) # shape (max_relic_nodes, 2)
-        observed_relic_nodes_mask = np.array(obs["relic_nodes_mask"]) # shape (max_relic_nodes, )
-        team_points = np.array(obs["team_points"]) # points of each team, team_points[self.team_id] is the points of the your team
+        unit_mask = np.array(obs[self.player]["units_mask"][self.team_id]) # shape (max_units, )
+        unit_positions = np.array(obs[self.player]["units"]["position"][self.team_id]) # shape (max_units, 2)
+        unit_energys = np.array(obs[self.player]["units"]["energy"][self.team_id]) # shape (max_units, 1)
+        observed_relic_node_positions = np.array(obs[self.player]["relic_nodes"]) # shape (max_relic_nodes, 2)
+        observed_relic_nodes_mask = np.array(obs[self.player]["relic_nodes_mask"]) # shape (max_relic_nodes, )
+        team_points = np.array(obs[self.player]["team_points"]) # points of each team, team_points[self.team_id] is the points of the your team
         
         # ids of units you can control at this timestep
         available_unit_ids = np.where(unit_mask)[0]

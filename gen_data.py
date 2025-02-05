@@ -1,9 +1,22 @@
 # Observation -> (5, 24, 24) array
+import numpy as np
 
-def gen_data(obs: dict) -> dict:
+class DictToClass:
+    def __init__(self, dictionary):
+        for key, value in dictionary.items():
+            if isinstance(value, dict):
+                value = DictToClass(value)
+            setattr(self, key, value)
+
+def gen_data(obs: dict, on_play = False) -> dict:
     my_data = dict()
     num_teams = 2
     width, height = 24, 24
+    
+    if on_play:
+        obs_class_0 = DictToClass(obs['player_0'])
+        obs_class_1 = DictToClass(obs['player_1'])
+        obs = {'player_0': obs_class_0, 'player_1': obs_class_1 }
 
     for t in range(num_teams):
         my_obs = obs[f'player_{t}']

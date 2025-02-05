@@ -3,14 +3,31 @@ import sys
 import numpy as np
 import torch
 import torch.nn as nn
+import torch.nn.functional as F
+from gen_data import gen_data
 
-model = torch.load('q_net.pt')
+# 에이전트 별 q-network
 
-def select_action(q_values, epsilon):
-    if np.random.rand() < epsilon:
-        return np.random.randint(q_values.size(-1))
-    else:
-        return np.array([torch.argmax(q_values).item(),0,0])
+class AgentQNetwork(nn.Module):
+    def __init__(self, obs_shape=(5, 24, 24), action_space=(6, 24, 24)):
+        super(AgentQNetwork, self).__init__()
+        self.action_space = action_space
+        self.conv1 = nn.Conv2d(obs_shape[0], 16, kernel_size=3, stride=1, padding=1) 
+        self.conv2 = nn.Conv2d(16, 32, kernel_size=3, stride=1, padding=1)
+        self.conv3 = nn.Conv2d(32, 64, kernel_size=3, stride=1, padding=1)
+        self.fc1 = nn.LazyLinear(128)
+        self.fc2 = nn.LazyLinear(action_space[0] * action_space[1] * action_space[2])
+
+    def forward(self, obs): # Input dimension -> (bs, 5, 24, 24)
+        if len(obs.shape) < 4:
+            obs = obs.unsqueeze(0) # 1개 짜리 input을 받은 경우 (1,5,24,24)로 변환
+        x = F.relu(self.conv1(obs))
+        x = F.relu(self.conv2(x))
+        x = F.relu(self.conv3(x))
+        x = nn.Flatten()(x)  # Flatten for the fully connected layers
+        x = F.relu(self.fc1(x))
+        q_values = self.fc2(x).view((obs.shape)[0], *self.action_space) 
+        return q_values # Out dimension -> (bs, 6, 24, 24).
 
 class Agent_test():
     def __init__(self, player: str, env_cfg) -> None:
@@ -20,19 +37,21 @@ class Agent_test():
         self.opp_team_id = 1 if self.team_id == 0 else 0
         np.random.seed(0)
         self.env_cfg = env_cfg
-        self.model = model
+        self.model = torch.load('q_net.pt')
+
+    def optimal_action_from_qval(self, q_value): # sinlge agent의 batched q value(bs, 6,24,24)를 list로 받음
+        batch_size = len(q_value)
+        max_q, max_id = torch.max(q_value.view(batch_size, -1), dim =1)
+        unraveled_idx = torch.tensor([torch.unravel_index(idx, q_value.shape[1:]) for idx in max_id])
+        q_values_batched = [max_q,unraveled_idx]
+        return q_values_batched # output -> list, q_values_batched = [(bs,1), (bs,3)], 첫 째는 optimal q value, 둘 째는 해당하는 action 자체
 
     def act(self, step: int, obs, remainingOverageTime: int = 60):
         """implement this function to decide what actions to send to each available unit. 
         
         step is the current timestep number of the game starting from 0 going up to max_steps_in_match * match_count_per_episode - 1.
         """
-        unit_mask = np.array(obs["units_mask"][self.team_id]) # shape (max_units, )
-        unit_positions = np.array(obs["units"]["position"][self.team_id]) # shape (max_units, 2)
-        unit_energys = np.array(obs["units"]["energy"][self.team_id]) # shape (max_units, 1)
-        #observed_relic_node_positions = np.array(obs["relic_nodes"]) # shape (max_relic_nodes, 2)
-        #observed_relic_nodes_mask = np.array(obs["relic_nodes_mask"]) # shape (max_relic_nodes, )
-        team_points = np.array(obs["team_points"]) # points of each team, team_points[self.team_id] is the points of the your team
+        unit_mask = np.array(obs[self.player]["units_mask"][self.team_id]) # shape (max_units, )
         
         # ids of units you can control at this timestep
         available_unit_ids = np.where(unit_mask)[0]
@@ -40,18 +59,22 @@ class Agent_test():
         actions = np.zeros((self.env_cfg["max_units"], 3), dtype=int)
         
         #num_agents = 16
-        q_networkss = self.model
-        q_values = torch.zeros((16, 6))
+        q_networks = self.model
         epsilon = 0.05
-        #unit_positions = state_batch[2]
 
-        #for agent_id, q_network in zip(range(num_agents), q_networkss):
+        num_agent = 16 
+        imaged_obs = torch.tensor(gen_data(obs, True)[self.player], dtype=torch.float)
 
-        for agent_id in available_unit_ids:
-            #obs = torch.tensor(np.array(state[agent_id]), dtype=torch.float32).unsqueeze(0)
-            q_network = q_networkss[agent_id]
-            obs_input = torch.tensor(unit_positions[agent_id], dtype=torch.float32)
-            #print(obs_input)
-            q_values[agent_id] = q_network(obs_input)
-            actions[agent_id] = select_action(q_values[agent_id], epsilon)
-        return np.array(actions)
+        with torch.no_grad():
+            for agent_id ,q_network in zip(range(num_agent), q_networks):
+                q_network.eval()
+                q_obs = q_network(imaged_obs)
+                optimal_q = self.optimal_action_from_qval(q_obs)
+                if agent_id in available_unit_ids:
+                    if np.random.rand() < epsilon:
+                        rand_act = torch.tensor([np.random.randint(6),np.random.randint(24),np.random.randint(24)])
+                        rand_act = rand_act.repeat(q_obs.size(0),1)
+                        actions[agent_id]= rand_act
+                    else:
+                        actions[agent_id] = optimal_q[1]
+        return np.array(actions) # action을 담은 list
